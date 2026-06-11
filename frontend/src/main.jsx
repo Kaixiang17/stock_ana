@@ -1,148 +1,508 @@
-import React, { useState } from "react";
-import { createRoot } from "react-dom/client";
-import "./style.css";
+import React,{useEffect,useState}from'react';
+import{createRoot}from'react-dom/client';
+import{LineChart,Line,ResponsiveContainer,Tooltip,PieChart,Pie,Cell,BarChart,Bar,XAxis,YAxis}from'recharts';
+import{Bell,Brain,CandlestickChart,LineChart as LineIcon,ShieldCheck,Wallet,LogOut,Plus,Search,Radio,Trash2,CheckSquare,Square,Clock,Send}from'lucide-react';
+import'./style.css';
 
-const API_BASE = "https://stock-ana-dmj1.onrender.com";
+const API_BASE='https://stock-ana-dmj1.onrender.com';
 
-function token() {
-  return localStorage.getItem("token") || "";
+function token(){
+  return localStorage.getItem('token')||'';
 }
 
-async function req(path, opt = {}) {
-  const r = await fetch(API_BASE + path, {
+async function req(path,opt={}){
+  const r=await fetch(API_BASE+path,{
     ...opt,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
-      ...(opt.headers || {}),
-    },
+    headers:{
+      'Content-Type':'application/json',
+      ...(token()?{Authorization:`Bearer ${token()}`}:{}),
+      ...(opt.headers||{})
+    }
   });
-
-  if (!r.ok) {
-    throw new Error(await r.text());
-  }
-
+  if(!r.ok)throw new Error(await r.text());
   return r.json();
 }
 
-function Login({ setAuthed }) {
-  const [mode, setMode] = useState("login");
-  const [form, setForm] = useState({
-    email: "demo@bullstreet.ai",
-    password: "demo123",
+const fmt=n=>Number(n||0).toLocaleString();
+
+function Login({setAuthed}){
+  const[mode,setMode]=useState('login');
+  const[form,setForm]=useState({
+    email:'demo@bullstreet.ai',
+    password:'demo123'
   });
-  const [err, setErr] = useState("");
+  const[err,setErr]=useState('');
 
-  async function submit(e) {
+  async function submit(e){
     e.preventDefault();
-    setErr("");
-
-    try {
-      const data = await req(
-        mode === "login" ? "/auth/login" : "/auth/register",
+    setErr('');
+    try{
+      const data=await req(
+        mode==='login'?'/auth/login':'/auth/register',
         {
-          method: "POST",
-          body: JSON.stringify(form),
+          method:'POST',
+          body:JSON.stringify(form)
         }
       );
-
-      localStorage.setItem("token", data.access_token);
+      localStorage.setItem('token',data.access_token);
       setAuthed(true);
-    } catch (e) {
-      setErr("帳密錯誤或帳號已存在");
+    }catch(e){
+      setErr('帳密錯誤或帳號已存在');
     }
   }
 
-  return (
-    <main className="login">
-      <section className="loginCard">
-        <div className="brand">
-          <div className="logo">B</div>
-          <div>
-            <h1>BullStreet AI</h1>
-            <p>Portfolio intelligence terminal</p>
-          </div>
+  return <main className="login">
+    <section className="loginCard">
+      <div className="brand">
+        <div className="logo">B</div>
+        <div>
+          <h1>BullStreet AI</h1>
+          <p>Portfolio intelligence terminal</p>
         </div>
+      </div>
 
-        <h2>{mode === "login" ? "登入投資儀表板" : "建立帳號"}</h2>
+      <h2>{mode==='login'?'登入投資儀表板':'建立帳號'}</h2>
 
-        <form onSubmit={submit}>
-          <input
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                email: e.target.value,
-              })
-            }
-          />
+      <form onSubmit={submit}>
+        <input
+          placeholder="Email"
+          value={form.email}
+          onChange={e=>setForm({...form,email:e.target.value})}
+        />
+        <input
+          placeholder="Password"
+          type="password"
+          value={form.password}
+          onChange={e=>setForm({...form,password:e.target.value})}
+        />
+        <button>{mode==='login'?'登入':'註冊'}</button>
+      </form>
 
-          <input
-            placeholder="Password"
-            type="password"
-            value={form.password}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                password: e.target.value,
-              })
-            }
-          />
+      {err&&<p className="err">{err}</p>}
 
-          <button>{mode === "login" ? "登入" : "註冊"}</button>
-        </form>
+      <p className="switch" onClick={()=>setMode(mode==='login'?'register':'login')}>
+        {mode==='login'?'沒有帳號？建立一個':'已有帳號？返回登入'}
+      </p>
 
-        {err && <p className="err">{err}</p>}
-
-        <p
-          className="switch"
-          onClick={() => setMode(mode === "login" ? "register" : "login")}
-        >
-          {mode === "login" ? "沒有帳號？建立一個" : "已有帳號？返回登入"}
-        </p>
-
-        <small>Demo：demo@bullstreet.ai / demo123</small>
-      </section>
-    </main>
-  );
+      <small>Demo：demo@bullstreet.ai / demo123</small>
+    </section>
+  </main>;
 }
 
-function Dashboard({ setAuthed }) {
-  return (
-    <main className="login">
-      <section className="loginCard">
-        <div className="brand">
-          <div className="logo">B</div>
-          <div>
-            <h1>BullStreet AI</h1>
-            <p>登入成功</p>
-          </div>
-        </div>
-
-        <h2>後台已登入</h2>
-
-        <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            setAuthed(false);
-          }}
-        >
-          登出
-        </button>
-      </section>
-    </main>
-  );
+function Card({title,icon,children,wide}){
+  return <section className={'card '+(wide?'wide':'')}>
+    <div className="cardHead">
+      <h3>{title}</h3>
+      {icon}
+    </div>
+    {children}
+  </section>;
 }
 
-function App() {
-  const [authed, setAuthed] = useState(!!token());
+function App(){
+  const[authed,setAuthed]=useState(!!token());
+  const[data,setData]=useState(null);
+  const[active,setActive]=useState('overview');
 
-  if (!authed) {
-    return <Login setAuthed={setAuthed} />;
+  const[hold,setHold]=useState({
+    symbol:'2330',
+    name:'台積電',
+    market:'TW',
+    shares:10,
+    avg_price:900
+  });
+
+  const[alert,setAlert]=useState({
+    symbol:'2330',
+    condition:'price_above',
+    target:1000,
+    channel:'line'
+  });
+
+  const[notice,setNotice]=useState({
+    title:'每日持股摘要',
+    rule_type:'portfolio_summary',
+    frequency:'daily',
+    time:'21:30',
+    channel:'make_line',
+    note:'推播損益、AI評分、台股/美股影響'
+  });
+
+  const[setting,setSetting]=useState({
+    make_webhook_url:'',
+    line_user_id:''
+  });
+
+  async function load(){
+    const d=await req('/dashboard');
+    setData(d);
+    setSetting(d.settings||{
+      make_webhook_url:'',
+      line_user_id:''
+    });
   }
 
-  return <Dashboard setAuthed={setAuthed} />;
+  useEffect(()=>{
+    if(authed){
+      load().catch(()=>{
+        localStorage.removeItem('token');
+        setAuthed(false);
+      });
+    }
+  },[authed]);
+
+  async function addHolding(e){
+    e.preventDefault();
+    await req('/holdings',{method:'POST',body:JSON.stringify(hold)});
+    await load();
+  }
+
+  async function delHolding(id){
+    await req('/holdings/'+id,{method:'DELETE'});
+    await load();
+  }
+
+  async function addAlert(e){
+    e.preventDefault();
+    await req('/alerts',{method:'POST',body:JSON.stringify(alert)});
+    await load();
+  }
+
+  async function delAlert(id){
+    await req('/alerts/'+id,{method:'DELETE'});
+    await load();
+  }
+
+  async function toggleAlert(a){
+    await req('/alerts/'+a.id+'/toggle',{
+      method:'PATCH',
+      body:JSON.stringify({enabled:a.enabled?0:1})
+    });
+    await load();
+  }
+
+  async function addNotice(e){
+    e.preventDefault();
+    await req('/notifications',{method:'POST',body:JSON.stringify(notice)});
+    await load();
+  }
+
+  async function delNotice(id){
+    await req('/notifications/'+id,{method:'DELETE'});
+    await load();
+  }
+
+  async function toggleNotice(n){
+    await req('/notifications/'+n.id+'/toggle',{
+      method:'PATCH',
+      body:JSON.stringify({enabled:n.enabled?0:1})
+    });
+    await load();
+  }
+
+  async function saveSetting(e){
+    e.preventDefault();
+    await req('/settings',{method:'POST',body:JSON.stringify(setting)});
+    await load();
+  }
+
+  async function testMake(){
+    await req('/make/test',{method:'POST'});
+    alert('已送出測試到 Make.com webhook');
+  }
+
+  if(!authed)return <Login setAuthed={setAuthed}/>;
+  if(!data)return <div className="loading">Loading BullStreet terminal...</div>;
+
+  const nav=[
+    ['overview','我的持股',<Wallet/>],
+    ['ai','AI分析',<Brain/>],
+    ['alerts','預警/LINE',<Bell/>],
+    ['tw','台股分析',<CandlestickChart/>],
+    ['us','美股影響',<LineIcon/>],
+    ['warrant','權證分析',<Search/>],
+    ['etf','ETF分析',<ShieldCheck/>]
+  ];
+
+  const allocation=(data.holdings||[]).map(h=>({
+    name:h.symbol,
+    value:h.market_value
+  }));
+
+  return <div className="shell">
+    <aside>
+      <div className="brand small">
+        <div className="logo">B</div>
+        <b>BullStreet</b>
+      </div>
+
+      {nav.map(n=>
+        <button
+          key={n[0]}
+          className={active===n[0]?'on':''}
+          onClick={()=>setActive(n[0])}
+        >
+          {n[2]}
+          <span>{n[1]}</span>
+        </button>
+      )}
+
+      <button onClick={()=>{
+        localStorage.removeItem('token');
+        setAuthed(false);
+      }}>
+        <LogOut/>
+        <span>登出</span>
+      </button>
+    </aside>
+
+    <main className="dash">
+      <header>
+        <div>
+          <p className="eyebrow">LIVE MARKET COMMAND CENTER</p>
+          <h1>{nav.find(n=>n[0]===active)?.[1]}</h1>
+        </div>
+        <div className="pulse">
+          <Radio/> API Ready
+        </div>
+      </header>
+
+      {active==='overview'&&<>
+        <div className="kpis">
+          <div><span>總市值</span><b>${fmt(data.summary.total_value)}</b></div>
+          <div><span>未實現損益</span><b className={data.summary.pnl>=0?'green':'red'}>${fmt(data.summary.pnl)}</b></div>
+          <div><span>報酬率</span><b className={data.summary.pnl_pct>=0?'green':'red'}>{data.summary.pnl_pct}%</b></div>
+          <div><span>AI評分</span><b>{data.ai.score}/100</b></div>
+        </div>
+
+        <section className="grid">
+          <Card title="我的持股" icon={<Wallet/>} wide>
+            <div className="table">
+              {(data.holdings||[]).map(h=>
+                <div className="row selectable" key={h.id}>
+                  <b>{h.symbol}</b>
+                  <span>{h.name}</span>
+                  <span>{h.market}</span>
+                  <span>{h.shares} 股</span>
+                  <span>${h.avg_price}</span>
+                  <span>${h.last_price}</span>
+                  <strong className={h.pnl>=0?'green':'red'}>{h.pnl_pct}%</strong>
+                  <button className="iconBtn" onClick={()=>delHolding(h.id)} title="刪除持股">
+                    <Trash2 size={16}/>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <form className="miniForm" onSubmit={addHolding}>
+              <input value={hold.symbol} onChange={e=>setHold({...hold,symbol:e.target.value})}/>
+              <input value={hold.name} onChange={e=>setHold({...hold,name:e.target.value})}/>
+              <select value={hold.market} onChange={e=>setHold({...hold,market:e.target.value})}>
+                <option>TW</option>
+                <option>US</option>
+                <option>ETF</option>
+                <option>WARRANT</option>
+              </select>
+              <input type="number" value={hold.shares} onChange={e=>setHold({...hold,shares:+e.target.value})}/>
+              <input type="number" value={hold.avg_price} onChange={e=>setHold({...hold,avg_price:+e.target.value})}/>
+              <button><Plus size={16}/>新增</button>
+            </form>
+          </Card>
+
+          <Card title="資產配置" icon={<CandlestickChart/>}>
+            <ResponsiveContainer height={230}>
+              <PieChart>
+                <Pie data={allocation} dataKey="value" nameKey="name" outerRadius={80}>
+                  {allocation.map((_,i)=><Cell key={i}/>)}
+                </Pie>
+                <Tooltip/>
+              </PieChart>
+            </ResponsiveContainer>
+          </Card>
+
+          <Card title="大盤/美股壓力雷達" icon={<LineIcon/>}>
+            <ResponsiveContainer height={230}>
+              <BarChart data={data.market_impact||[]}>
+                <XAxis dataKey="name"/>
+                <YAxis/>
+                <Tooltip/>
+                <Bar dataKey="impact"/>
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </section>
+      </>}
+
+      {active==='ai'&&
+        <section className="grid">
+          <Card title="AI 綜合評分" icon={<Brain/>} wide>
+            <div className="score">{data.ai.score}<span>/100</span></div>
+            <p>{data.ai.verdict}</p>
+            <div className="chips">
+              {(data.ai.factors||[]).map(x=><span key={x}>{x}</span>)}
+            </div>
+          </Card>
+
+          <Card title="概念股關聯" icon={<Search/>} wide>
+            {(data.related||[]).map(x=>
+              <div className="idea" key={x.theme}>
+                <b>{x.theme}</b>
+                <p>{x.stocks.join('、')}</p>
+              </div>
+            )}
+          </Card>
+        </section>
+      }
+
+      {active==='alerts'&&
+        <section className="grid">
+          <Card title="新增台股/美股/ETF/權證預警" icon={<Bell/>} wide>
+            <form className="miniForm" onSubmit={addAlert}>
+              <input value={alert.symbol} onChange={e=>setAlert({...alert,symbol:e.target.value})}/>
+              <select value={alert.condition} onChange={e=>setAlert({...alert,condition:e.target.value})}>
+                <option value="price_above">價格高於</option>
+                <option value="price_below">價格低於</option>
+                <option value="pnl_below">損益低於</option>
+                <option value="volume_spike">爆量</option>
+              </select>
+              <input type="number" value={alert.target} onChange={e=>setAlert({...alert,target:+e.target.value})}/>
+              <select value={alert.channel} onChange={e=>setAlert({...alert,channel:e.target.value})}>
+                <option>line</option>
+                <option>make_line</option>
+                <option>email</option>
+              </select>
+              <button>建立預警</button>
+            </form>
+
+            <div className="list">
+              {(data.alerts||[]).map(a=>
+                <div className="alertLine" key={a.id}>
+                  <button className="iconBtn" onClick={()=>toggleAlert(a)}>
+                    {a.enabled?<CheckSquare size={18}/>:<Square size={18}/>}
+                  </button>
+                  <b>{a.symbol}</b>
+                  <span>{a.condition}</span>
+                  <span>{a.target}</span>
+                  <span>{a.channel}</span>
+                  <button className="iconBtn danger" onClick={()=>delAlert(a.id)}>
+                    <Trash2 size={16}/>
+                  </button>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card title="定期通知" icon={<Clock/>} wide>
+            <form className="miniForm" onSubmit={addNotice}>
+              <input value={notice.title} onChange={e=>setNotice({...notice,title:e.target.value})}/>
+              <select value={notice.rule_type} onChange={e=>setNotice({...notice,rule_type:e.target.value})}>
+                <option value="portfolio_summary">持股摘要</option>
+                <option value="market_watch">大盤/美股</option>
+                <option value="revenue_financial">營收財報</option>
+                <option value="etf_dca">ETF定期定額</option>
+              </select>
+              <select value={notice.frequency} onChange={e=>setNotice({...notice,frequency:e.target.value})}>
+                <option value="daily">每天</option>
+                <option value="weekdays">交易日</option>
+                <option value="weekly">每週</option>
+                <option value="monthly">每月</option>
+              </select>
+              <input type="time" value={notice.time} onChange={e=>setNotice({...notice,time:e.target.value})}/>
+              <input value={notice.note} onChange={e=>setNotice({...notice,note:e.target.value})}/>
+              <button>新增通知</button>
+            </form>
+
+            <div className="list">
+              {(data.notifications||[]).map(n=>
+                <div className="alertLine" key={n.id}>
+                  <button className="iconBtn" onClick={()=>toggleNotice(n)}>
+                    {n.enabled?<CheckSquare size={18}/>:<Square size={18}/>}
+                  </button>
+                  <b>{n.title}</b>
+                  <span>{n.frequency}</span>
+                  <span>{n.time}</span>
+                  <span>{n.channel}</span>
+                  <button className="iconBtn danger" onClick={()=>delNotice(n.id)}>
+                    <Trash2 size={16}/>
+                  </button>
+                </div>
+              )}
+            </div>
+          </Card>
+
+          <Card title="Make.com / LINE 推播設定" icon={<Radio/>} wide>
+            <form className="settingForm" onSubmit={saveSetting}>
+              <label>
+                Make Webhook URL
+                <input
+                  value={setting.make_webhook_url}
+                  onChange={e=>setSetting({...setting,make_webhook_url:e.target.value})}
+                  placeholder="https://hook.make.com/xxxx"
+                />
+              </label>
+
+              <label>
+                LINE User ID（可選）
+                <input
+                  value={setting.line_user_id}
+                  onChange={e=>setSetting({...setting,line_user_id:e.target.value})}
+                />
+              </label>
+
+              <button>儲存設定</button>
+              <button type="button" onClick={testMake}>
+                <Send size={16}/>測試推播
+              </button>
+            </form>
+
+            <p className="hint">
+              Make.com 情境：Webhook 收到 BullStreet payload → LINE Bot / LINE Notify 模組送訊息。
+            </p>
+          </Card>
+        </section>
+      }
+
+      {['tw','us','warrant','etf'].includes(active)&&
+        <Analysis type={active} data={data}/>
+      }
+    </main>
+  </div>;
 }
 
-createRoot(document.getElementById("root")).render(<App />);
+function Analysis({type,data}){
+  const map={
+    tw:['台股分析','月營收、財報、法人籌碼、技術面'],
+    us:['美股影響','NASDAQ、S&P500、VIX、美元、美債殖利率'],
+    warrant:['權證分析','價內外、剩餘天數、隱波、槓桿、流動性'],
+    etf:['ETF分析','成分股、折溢價、配息、追蹤指數']
+  };
+
+  return <section className="grid">
+    <Card title={map[type][0]} icon={<Brain/>} wide>
+      <p>{map[type][1]}</p>
+      <ResponsiveContainer height={260}>
+        <LineChart data={data.chart||[]}>
+          <XAxis dataKey="day"/>
+          <YAxis/>
+          <Tooltip/>
+          <Line dataKey="price" strokeWidth={3}/>
+        </LineChart>
+      </ResponsiveContainer>
+    </Card>
+
+    <Card title="分析模組狀態" icon={<ShieldCheck/>} wide>
+      <div className="modules">
+        {[
+          '技術面 RSI/MACD/均線',
+          '營收 YoY/MoM',
+          '財報 EPS/毛利率',
+          '籌碼 三大法人/融資融券',
+          '概念股 供應鏈/同族群',
+          '大盤 Beta/相關係數'
+        ].map(x=><span key={x}>✅ {x}</span>)}
+      </div>
+    </Card>
+  </section>;
+}
+
+createRoot(document.getElementById('root')).render(<App/>);
