@@ -1,10 +1,9 @@
 fastapi
-uvicorn[standard]
-python-jose[cryptography]
-passlib[bcrypt]
+uvicorn
 sqlalchemy
-pydantic
-python-dotenv
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+python-jose
+python-multipart
 requests
 yfinance
-pandas
