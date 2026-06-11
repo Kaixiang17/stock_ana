@@ -1,49 +1,105 @@
-# BullStreet Portfolio 🐂
+# BullStreet AI
 
-Wall Street 科技感的持股分析系統：持股新增、概念股、台股/美股影響、技術面、大盤雷達，手機可瀏覽。
+Wall Street 科技感投資儀表板：登入後可管理持股、AI 分析、LINE 推播、台股/美股預警、權證與 ETF 分析。手機可瀏覽。
 
 ## 功能
-- 新增/刪除持股，GitHub Pages 靜態模式會存在瀏覽器 localStorage
-- FastAPI 後端可抓台股 FinMind、美股 yfinance
-- 個股分析：價格、MA20、MA60、20 日強弱、相關概念股
-- 大盤雷達：NASDAQ、SOX、S&P500、台股加權
-- RWD 手機版
 
-## API 來源建議
-- 台股：FinMind，資料集涵蓋台股日成交、月營收、財報、持股、三大法人等。
-- 台股官方：TWSE / MOPS / data.gov.tw 可查營收、財報與本益比等資料。
-- 美股：Alpha Vantage 或 yfinance。正式產品建議用 Alpha Vantage / Polygon / Finnhub 等有明確授權的 API。
+- 登入 / 註冊
+- 我的持股：新增台股、美股、ETF、權證
+- AI 分析：概念股、基本面、技術面、籌碼面、大盤影響
+- LINE 推播：保留 LINE Messaging API 設定
+- 台股預警 / 美股預警 / ETF / 權證分析
+- RWD 手機版 UI
 
 ## 本機啟動
+
+### Backend
+
 ```bash
 cd backend
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
-再開啟 `frontend/index.html`。
+Backend: http://localhost:8000
+API docs: http://localhost:8000/docs
 
-## FinMind Token
+### Frontend
+
 ```bash
-export FINMIND_TOKEN="你的 token"
-```
-沒有 token 也可試用部分資料，但容易遇到限制。
-
-## GitHub Pages
-把 `frontend/` 裡面三個檔案放到 repo root，或設定 Pages 指到 `/frontend`。靜態模式可以新增持股，但即時 API 分析需要另外部署後端。
-
-## 後端部署
-建議 Render / Railway / Fly.io。部署後把 `frontend/app.js` 的 API 改成你的後端網址：
-```js
-const API = 'https://your-api.onrender.com';
+cd frontend
+npm install
+npm run dev
 ```
 
-## 下一版可以加
-- 月營收 YoY/MoM
-- 三大法人買賣超
-- 融資融券
-- EPS、毛利率、營益率
-- AI 新聞摘要與事件分數
-- 使用者登入與雲端同步
+Frontend: http://localhost:5173
+
+Demo 帳號：
+
+```txt
+demo@bullstreet.ai / demo123
+```
+
+## GitHub 上傳
+
+```bash
+git init
+git add .
+git commit -m "Initial BullStreet AI"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/bullstreet-ai.git
+git push -u origin main
+```
+
+## 部署建議
+
+### Frontend
+
+可部署到：
+
+- GitHub Pages
+- Vercel
+- Netlify
+
+若後端部署到 Render，請在 frontend 設定：
+
+```env
+VITE_API_URL=https://你的-render-backend.onrender.com
+```
+
+### Backend
+
+可部署到：
+
+- Render
+- Railway
+- Fly.io
+
+環境變數：
+
+```env
+JWT_SECRET=請換成很長的隨機字串
+DATABASE_URL=sqlite:///./bullstreet.db
+LINE_CHANNEL_ACCESS_TOKEN=你的_LINE_TOKEN
+LINE_USER_ID=你的_LINE_USER_ID
+```
+
+## API 串接方向
+
+目前專案先做成可跑的完整架構，報價用 mock fallback，之後可以接：
+
+- 台股：FinMind、證交所 OpenAPI、Goodinfo 手動匯入
+- 美股：yfinance、Alpha Vantage、Finnhub
+- 總經：FRED、Alpha Vantage
+- LINE：Messaging API 或 Make.com webhook
+
+## 專案結構
+
+```txt
+bullstreet_ai/
+├── frontend/       React + Vite
+├── backend/        FastAPI + SQLite
+└── README.md
+```
